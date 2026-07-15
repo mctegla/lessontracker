@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Plus, Trash2, RefreshCw, Calendar, AlertTriangle, Link2 } from 'lucide-react';
 
 export default function Settings() {
-  const { loading, connected, calendars, reload, connect } = useGcalConnection();
+  const { loading, connected, calendars, reload, connect, disconnect } = useGcalConnection();
   const [newName, setNewName] = useState('');
   const [busyId, setBusyId] = useState(null);
   const [adding, setAdding] = useState(false);
@@ -67,6 +67,16 @@ export default function Settings() {
           <Calendar className="w-4 h-4 text-muted-foreground" />
           <span className="text-muted-foreground">Connected to Google Calendar — {calendars.length} calendar(s) available.</span>
           <Button variant="ghost" size="sm" className="ml-auto" onClick={reload} disabled={loading}><RefreshCw className="w-4 h-4 mr-1.5" />Refresh</Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={async () => {
+              if (!confirm('Disconnect Google Calendar? Background sync will stop until you reconnect.')) return;
+              await disconnect();
+            }}
+          >
+            Disconnect
+          </Button>
         </div>
       )}
 

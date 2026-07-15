@@ -1,4 +1,4 @@
-import { getUserFromRequest, getGoogleAccessToken, corsHeaders } from '../_shared/google.ts';
+import { getUserFromRequest, getGoogleAccessToken, serviceClient, corsHeaders } from '../_shared/google.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders() });
@@ -6,9 +6,17 @@ Deno.serve(async (req) => {
     const user = await getUserFromRequest(req);
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401, headers: corsHeaders() });
 
+    const body = await req.json().catch(() => ({}));
+
+    if (body.action === 'disconnect') {
+      const supabase = serviceClient();
+      const { error } = await supabase.from('google_calendar_tokens').delete().eq('user_id', user.id);
+      if (error) return Response.json({ error: 'disconnect_failed', details: error.message }, { status: 500, headers: corsHeaders() });
+      return Response.json({ disconnected: true }, { headers: corsHeaders() });
+    }
+
     const { accessToken } = await getGoogleAccessToken(user.id);
     const headers = { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' };
-    const body = await req.json().catch(() => ({}));
 
     if (body.action === 'listCalendars') {
       const res = await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList', { headers });

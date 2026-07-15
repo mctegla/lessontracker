@@ -51,5 +51,15 @@ export function useGcalConnection() {
     window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
   }, []);
 
-  return { loading, connected, calendars, error, reload, connect };
+  // Removes the stored Google tokens for this user. Note: this only revokes
+  // the connection on our side — it does not revoke the grant on Google's
+  // side. To fully revoke, the user can also visit
+  // https://myaccount.google.com/connections and remove access there.
+  const disconnect = useCallback(async () => {
+    await base44.functions.invoke('gcalApi', { action: 'disconnect' });
+    setConnected(false);
+    setCalendars([]);
+  }, []);
+
+  return { loading, connected, calendars, error, reload, connect, disconnect };
 }
