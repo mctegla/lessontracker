@@ -1,0 +1,8 @@
+project_id = "lesson-tracker"
+
+# Google redirects the browser here directly (no Supabase Authorization
+# header will be present), so this one function must skip JWT verification.
+# All other functions keep the default (verify_jwt = true), since they're
+# always called with either a user's session token or the service role key.
+[functions.google-oauth-callback]
+verify_jwt = false
